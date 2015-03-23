@@ -22,10 +22,11 @@ object Matrixes extends App {
 
     // Monoid?
     val simple:Parser[Answer] = ((el map single)) | ((el ~ simple) map {case (x,y) => y})
-//    val chain:Parser[Answer] = (
-//      (el map (single))
-//        | ((chain ~ chain) map {case (a1, a2) => mult(a1, a2)})
-//    )
+    val comp:Parser[Answer] = ((el map single) | ((el ~ comp) map {case (x,y) => println(x+" "+y); mult(single(x),y)})).aggregate(x => List(x.head))
+    val chain:Parser[Answer] = (
+      (el map (single))
+        | ((chain ~ chain) map {case (a1, a2) => mult(a1, a2)})
+    )
 
     //val axiom=chain //FIXME: needed?
   }
@@ -36,13 +37,14 @@ object Matrixes extends App {
     val mult = (c1: Answer, c2: Answer) => Cost(c1.v + c2.v + c1.m.x*c2.m.x*c2.m.y, Matrix(c1.m.x, c2.m.y))
   }
 
-  class MatrixTest extends MatrixGrammar with MatrixAlgebra{
-    def input = Array(Matrix(1,2),Matrix(2,3),Matrix(3,4)) //define the input or the alphabet translations?
+  class MatrixTest extends MatrixGrammar with MatrixAlgebra {
+    def input = Array(Matrix(1,2), Matrix(2,3), Matrix(3,4)) //define the input or the alphabet translations?
   }
 
   val mm = new MatrixTest()
-  val mats = Array((3,2),(2,4),(4,2),(2,5))
-  val res = mm.Parser.apply[Matrix](t => List(Matrix(t._1, t._2)))((1,1))
-  //val res = mm.Parser(x => List(Matrix(x._1, x._2)))
+  //val mats = Array((3,2),(2,4),(4,2),(1,2))
+  val res = mm.Parser[(Int, Int)](List(_))((1, 2))
   println(res)
+  //val res2 = mm.comp(Matrix(1,2))
+  //println(res2)
 }
